@@ -37,6 +37,34 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake --build . --config $BUILD_TYPE -j 2
+        cmake --build . --config $BUILD_TYPE -j 2 --target install
+        cmake --build . --config $BUILD_TYPE -j 2 --target package
+
+    - name: 📦 Archive ubuntu package
+      if: matrix.os == 'ubuntu-latest' && matrix.build-type == 'Release'
+      uses: actions/upload-artifact@v2
+      with:
+        name: imgui-app-ubuntu
+        path: |
+          ${{runner.workspace}}/build/*.zip
+
+    - name: 📦 Archive macos package
+      if: matrix.os == 'macos-latest' && matrix.build-type == 'Release'
+      uses: actions/upload-artifact@v2
+      with:
+        name: imgui-app-macos
+        path: |
+          ${{runner.workspace}}/build/*.dmg
+          ${{runner.workspace}}/build/install/*
+          !${{runner.workspace}}/build/install/*.app
+
+    - name: 📦 Archive windows package
+      if: matrix.os == 'windows-latest' && matrix.build-type == 'Release'
+      uses: actions/upload-artifact@v2
+      with:
+        name: imgui-app-windows
+        path: |
+          ${{runner.workspace}}/build/*.zip
 
   web-app:
     runs-on: ubuntu-20.04
@@ -82,7 +110,7 @@ jobs:
     - name: 📦 Archive web app
       uses: actions/upload-artifact@v2
       with:
-        name: nanogui-app-web
+        name: imgui-app-web
         path: webapp/
 
     - name: 🚀 Deploy web app
