@@ -35,10 +35,20 @@ static ImFont * font_16 = nullptr;
 static ImFont * font_18 = nullptr;
 
 #ifdef __EMSCRIPTEN__
-EM_JS( int, canvas_get_width, (), { return Module.canvas.width; } );
-EM_JS( int, canvas_get_height, (), { return Module.canvas.height; } );
-EM_JS( void, resizeCanvas, (), { js_resizeCanvas(); } );
+EM_JS( int, js_canvas_get_width, (), { return Module.canvas.width; } );
+EM_JS( int, js_canvas_get_height, (), { return Module.canvas.height; } );
+EM_JS( void, js_resize_canvas, (), { resizeCanvas(); } );
+EM_JS( void, js_notify, ( const char * message, int length ), { notifyMessage( UTF8ToString( message, length ) ); } );
 #endif
+
+static void notification( const std::string & message )
+{
+#ifdef __EMSCRIPTEN__
+    js_notify( message.c_str(), message.size() );
+#else
+    // TODO
+#endif
+}
 
 static void glfw_error_callback( int error, const char * description )
 {
@@ -289,8 +299,8 @@ static void show_overlay( bool * p_open )
 void loop()
 {
 #ifdef __EMSCRIPTEN__
-    int width  = canvas_get_width();
-    int height = canvas_get_height();
+    int width  = js_canvas_get_width();
+    int height = js_canvas_get_height();
 
     glfwSetWindowSize( g_window, width, height );
 #endif
@@ -332,6 +342,13 @@ void loop()
         ImGui::Text( "Windows" );
         ImGui::Checkbox( "Demo Window", &show_demo_window );
         ImGui::Checkbox( "Another Window", &show_another_window );
+
+        ImGui::Dummy( { 0, 10 } );
+
+        if( ImGui::Button( "notification" ) )
+            notification( "This is a notification message" );
+
+        ImGui::Dummy( { 0, 10 } );
 
         if( ImGui::Button( "Button" ) )
             counter++;
@@ -420,7 +437,7 @@ int init()
     glfwSetCharCallback( g_window, ImGui_ImplGlfw_CharCallback );
 
 #ifdef __EMSCRIPTEN__
-    resizeCanvas();
+    js_resize_canvas();
 #endif
 
     return 0;

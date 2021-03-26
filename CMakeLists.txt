@@ -9,8 +9,11 @@ message( STATUS "Compiler ID: ${CMAKE_CXX_COMPILER_ID} (${CMAKE_CXX_COMPILER_VER
 
 
 #--------------------------------------------------
-set( CMAKE_DISABLE_SOURCE_CHANGES  ON )
-set( CMAKE_DISABLE_IN_SOURCE_BUILD ON )
+set( CMAKE_DISABLE_SOURCE_CHANGES  ON  )
+set( CMAKE_DISABLE_IN_SOURCE_BUILD ON  )
+set( CMAKE_CXX_STANDARD            17  )
+set( CMAKE_CXX_STANDARD_REQUIRED   ON  )
+set( CMAKE_CXX_EXTENSIONS          OFF )
 
 set( THIRDPARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/thirdparty )
 
@@ -86,6 +89,7 @@ target_link_libraries( app imgui fmt::fmt )
 if( IMGUI_COMPILE_GLFW )
     target_link_libraries( app glfw )
 elseif( IMGUI_TARGET_WEB )
+    target_include_directories( app PRIVATE ${EMSCRIPTEN_ROOT_PATH}/system/include )
     ### Set specific flags for emcc and to place the result under webapp/js/
     set_target_properties( app PROPERTIES
         COMPILE_FLAGS "-O3 -g -s WASM=1 -s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s DEMANGLE_SUPPORT=1 -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s ASSERTIONS=1 -s DISABLE_EXCEPTION_CATCHING=0 -s FORCE_FILESYSTEM=1"
