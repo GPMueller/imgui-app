@@ -3,6 +3,7 @@
 #define IMGUI_APP_APPLICATION_HPP
 
 #include <glfw_window.hpp>
+#include <opengl_renderer.hpp>
 
 #include <imgui/imgui.h>
 
@@ -11,7 +12,7 @@
 namespace ui
 {
 
-class Application : GlfwWindow
+class Application
 {
 public:
     Application( const std::string & title );
@@ -20,14 +21,11 @@ public:
     void run();
     void draw();
 
+    void resize( int width, int height );
+
 protected:
-    void draw_gl();
     void draw_menu_bar();
     void draw_overlay();
-
-    ImVec4 clear_color  = ImVec4( 0.4f, 0.4f, 0.4f, 1.f );
-    bool gl_initialized = false;
-    float gradient      = 1.0f;
 
     bool show_demo_window    = false;
     bool show_another_window = false;
@@ -36,14 +34,14 @@ protected:
 
     bool dark_mode = true;
 
-    int display_w = 100;
-    int display_h = 100;
-
     ImFont * font_cousine = nullptr;
     ImFont * font_12      = nullptr;
     ImFont * font_14      = nullptr;
     ImFont * font_16      = nullptr;
     ImFont * font_18      = nullptr;
+
+    GlfwWindow glfw_window;
+    OpenglRenderer opengl_renderer;
 };
 
 } // namespace ui

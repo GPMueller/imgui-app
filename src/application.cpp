@@ -21,17 +21,14 @@ static ui::Application * global_app_handle;
 
 #ifdef __EMSCRIPTEN__
 
-EM_JS( int, js_canvas_get_width, (), { return Module.canvas.width; } );
-EM_JS( int, js_canvas_get_height, (), { return Module.canvas.height; } );
 EM_JS( void, js_resize_canvas, (), { resizeCanvas(); } );
 EM_JS( void, js_notify, ( const char * message, int length ), { notifyMessage( UTF8ToString( message, length ) ); } );
 
 EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context_imgui;
 EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context_render;
 
-void emscripten_loop()
+void emscripten_app_draw()
 {
-    glfwPollEvents();
     global_app_handle->draw();
 }
 
@@ -46,92 +43,14 @@ static void notification( const std::string & message )
 #endif
 }
 
+static void framebuffer_size_callback( GLFWwindow * window, int width, int height )
+{
+    global_app_handle->resize( width, height );
+    global_app_handle->draw();
+}
+
 namespace ui
 {
-
-void Application::draw_gl()
-{
-    // An array of 3 vectors which represents 3 vertices
-    static const GLfloat g_vertex_buffer_data[] = {
-        -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-    };
-    static GLuint shaderProgram;
-    if( !gl_initialized )
-    {
-        // Shader sources
-        const GLchar * vertexSource = "attribute vec4 position;                 \n"
-                                      "void main()                              \n"
-                                      "{                                        \n"
-                                      "  gl_Position = vec4(position.xyz, 1.0); \n"
-                                      "}                                        \n";
-        const GLchar * fragmentSource = "precision mediump float;                              \n"
-                                        "uniform vec2 resolution;                              \n"
-                                        "uniform float gradient;                               \n"
-                                        "void main()                                           \n"
-                                        "{                                                     \n"
-                                        "  vec2 p = gradient *gl_FragCoord.xy / resolution.xy; \n"
-                                        "  gl_FragColor = vec4(p.x,p.y,0.912,1.0);             \n"
-                                        "}                                                     \n";
-
-        // Create a Vertex Buffer Object and copy the vertex data to it
-        GLuint vbo;
-        glGenBuffers( 1, &vbo );
-
-        GLfloat vertices[] = { 0.0f, 0.5f, 0.5f, -0.5f, -0.5f, -0.5f };
-
-        glBindBuffer( GL_ARRAY_BUFFER, vbo );
-        glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), vertices, GL_STATIC_DRAW );
-
-        // Create and compile the vertex shader
-        GLuint vertexShader = glCreateShader( GL_VERTEX_SHADER );
-        glShaderSource( vertexShader, 1, &vertexSource, nullptr );
-        glCompileShader( vertexShader );
-
-        // Create and compile the fragment shader
-        GLuint fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-        glShaderSource( fragmentShader, 1, &fragmentSource, nullptr );
-        glCompileShader( fragmentShader );
-
-        // Link the vertex and fragment shader into a shader program
-        shaderProgram = glCreateProgram();
-        glAttachShader( shaderProgram, vertexShader );
-        glAttachShader( shaderProgram, fragmentShader );
-        glLinkProgram( shaderProgram );
-        glUseProgram( shaderProgram );
-
-        // Check the program
-        GLint Result = GL_FALSE;
-        int InfoLogLength;
-        glGetProgramiv( shaderProgram, GL_LINK_STATUS, &Result );
-        glGetProgramiv( shaderProgram, GL_INFO_LOG_LENGTH, &InfoLogLength );
-        if( InfoLogLength > 0 )
-        {
-            std::string ProgramErrorMessage;
-            ProgramErrorMessage.reserve( InfoLogLength + 1 );
-            glGetProgramInfoLog( shaderProgram, InfoLogLength, NULL, ProgramErrorMessage.data() );
-            fmt::print( "GL shader program error: {}\n", ProgramErrorMessage );
-        }
-
-        gl_initialized = true;
-    }
-
-    glViewport( 0, 0, display_w, display_h );
-    glClearColor( clear_color.x, clear_color.y, clear_color.z, clear_color.w );
-    glClear( GL_COLOR_BUFFER_BIT );
-
-    // Specify the layout of the vertex data
-    GLint posAttrib = glGetAttribLocation( shaderProgram, "position" );
-    glEnableVertexAttribArray( posAttrib );
-    glVertexAttribPointer( posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0 );
-
-    glUseProgram( shaderProgram );
-
-    glUniform1f( glad_glGetUniformLocation( shaderProgram, "gradient" ), gradient );
-    glUniform2f( glGetUniformLocation( shaderProgram, "resolution" ), display_w, display_h );
-
-    // Draw a triangle from the 3 vertices
-    glDrawArrays( GL_TRIANGLES, 0, 3 );
-}
 
 void Application::draw_menu_bar()
 {
@@ -210,8 +129,12 @@ void Application::draw_menu_bar()
             if( ImGui::Button( ICON_FA_SUN, ImVec2( width, bar_height ) ) )
             {
                 styles::apply_light();
-                clear_color = ImVec4( 0.7f, 0.7f, 0.7f, 1.f );
-                dark_mode   = false;
+                opengl_renderer.background_color[0] = 0.7f;
+                opengl_renderer.background_color[1] = 0.7f;
+                opengl_renderer.background_color[2] = 0.7f;
+                opengl_renderer.background_color[3] = 1.0f;
+
+                dark_mode = false;
             }
         }
         else
@@ -219,8 +142,12 @@ void Application::draw_menu_bar()
             if( ImGui::Button( ICON_FA_MOON, ImVec2( width, bar_height ) ) )
             {
                 styles::apply_charcoal();
-                clear_color = ImVec4( 0.4f, 0.4f, 0.4f, 1.f );
-                dark_mode   = true;
+                opengl_renderer.background_color[0] = 0.4f;
+                opengl_renderer.background_color[1] = 0.4f;
+                opengl_renderer.background_color[2] = 0.4f;
+                opengl_renderer.background_color[3] = 1.0f;
+
+                dark_mode = true;
             }
         }
         right_edge -= ( width + style.FramePadding.x );
@@ -300,27 +227,22 @@ void Application::draw_overlay()
 
 void Application::draw()
 {
-#ifdef __EMSCRIPTEN__
-    display_w = js_canvas_get_width();
-    display_h = js_canvas_get_height();
-    glfwSetWindowSize( glfw_window, display_w, display_h );
-#else
-    glfwGetFramebufferSize( glfw_window, &display_w, &display_h );
-#endif
+    this->glfw_window.update();
 
+    // --------------- ImGui+GLFW+GL UI context setup
 #ifdef __EMSCRIPTEN__
+    const auto & [w, h] = glfw_window.get_size();
     emscripten_webgl_make_context_current( context_imgui );
-    glViewport( 0, 0, display_w, display_h );
+    glViewport( 0, 0, w, h );
     glClearColor( 0, 0, 0, 0 );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 #endif
-
-    glfwPollEvents();
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    // --------------- ImGui actual UI calls
     ImGui::PushFont( font_12 );
 
     draw_menu_bar();
@@ -355,11 +277,11 @@ void Application::draw()
 
         ImGui::TextUnformatted( "Triangle gradient" );
         ImGui::SameLine();
-        ImGui::SliderFloat( "##gradient-slider", &gradient, 0.0f, 2.0f );
+        ImGui::SliderFloat( "##gradient-slider", &opengl_renderer.gradient, 0.0f, 2.0f );
 
         ImGui::TextUnformatted( "Background colour" );
         ImGui::SameLine();
-        ImGui::ColorEdit3( "##background-color-edit", (float *)&clear_color );
+        ImGui::ColorEdit3( "##background-color-edit", opengl_renderer.background_color );
 
         ImGui::Dummy( { 0, 10 } );
 
@@ -377,50 +299,54 @@ void Application::draw()
 
     ImGui::PopFont();
 
+    // --------------- ImGui+GLFW+GL UI drawing
     ImGui::Render();
-
     ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
+    glfwSwapBuffers( glfw_window.glfw_window_handle );
 
-    glfwSwapBuffers( glfw_window );
-
+    // --------------- GL render context setup and drawing
 #ifdef __EMSCRIPTEN__
     emscripten_webgl_make_context_current( context_render );
 #endif
-    draw_gl();
+    opengl_renderer.draw();
+}
+
+void Application::resize( int width, int height )
+{
+    glfw_window.resize( width, height );
+    const auto & [w, h] = glfw_window.get_size();
+    opengl_renderer.set_framebuffer_size( w, h );
 }
 
 void Application::run()
 {
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop( emscripten_loop, 0, true );
+    emscripten_set_main_loop( emscripten_app_draw, 0, true );
 #else
-    while( !glfwWindowShouldClose( glfw_window ) )
+    while( !this->glfw_window.should_close() )
     {
-        glfwPollEvents();
         this->draw();
     }
 #endif
 }
 
-Application::Application( const std::string & title ) : GlfwWindow( title )
+Application::Application( const std::string & title ) : glfw_window( title )
 {
     global_app_handle = this;
 
-    // ----------------------------- OPENGL
     // Initialize GLAD
     gladLoadGL( (GLADloadfunc)glfwGetProcAddress );
 
-    // ----------------------------- IMGUI
     // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO & io   = ImGui::GetIO();
     io.IniFilename = "imgui_state.ini";
 
-    ImGui_ImplGlfw_InitForOpenGL( glfw_window, false );
+    ImGui_ImplGlfw_InitForOpenGL( glfw_window.glfw_window_handle, false );
     ImGui_ImplOpenGL3_Init();
 
-    // ----------------------------- WEBGL
+    // Emscripten context initialization
 #ifdef __EMSCRIPTEN__
     EmscriptenWebGLContextAttributes attrs_imgui;
     emscripten_webgl_init_context_attributes( &attrs_imgui );
@@ -465,10 +391,11 @@ Application::Application( const std::string & title ) : GlfwWindow( title )
     font_18      = fonts::karla( 18 );
 
     // Cursor callbacks
-    glfwSetMouseButtonCallback( glfw_window, ImGui_ImplGlfw_MouseButtonCallback );
-    glfwSetScrollCallback( glfw_window, ImGui_ImplGlfw_ScrollCallback );
-    glfwSetKeyCallback( glfw_window, ImGui_ImplGlfw_KeyCallback );
-    glfwSetCharCallback( glfw_window, ImGui_ImplGlfw_CharCallback );
+    glfwSetMouseButtonCallback( glfw_window.glfw_window_handle, ImGui_ImplGlfw_MouseButtonCallback );
+    glfwSetScrollCallback( glfw_window.glfw_window_handle, ImGui_ImplGlfw_ScrollCallback );
+    glfwSetKeyCallback( glfw_window.glfw_window_handle, ImGui_ImplGlfw_KeyCallback );
+    glfwSetCharCallback( glfw_window.glfw_window_handle, ImGui_ImplGlfw_CharCallback );
+    glfwSetFramebufferSizeCallback( glfw_window.glfw_window_handle, framebuffer_size_callback );
 
 #ifdef __EMSCRIPTEN__
     js_resize_canvas();

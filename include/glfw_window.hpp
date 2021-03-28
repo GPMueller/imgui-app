@@ -2,9 +2,10 @@
 #ifndef IMGUI_APP_GLFW_WINDOW_HPP
 #define IMGUI_APP_GLFW_WINDOW_HPP
 
-#include <GLFW/glfw3.h>
-
 #include <string>
+#include <utility>
+
+struct GLFWwindow;
 
 namespace ui
 {
@@ -13,11 +14,18 @@ class GlfwWindow
 {
 public:
     GlfwWindow( const std::string & title );
+    void resize( int width, int height );
+    std::pair<int, int> get_size();
 
-protected:
     ~GlfwWindow();
+    void update();
+    bool should_close();
 
-    GLFWwindow * glfw_window;
+    GLFWwindow * glfw_window_handle;
+
+private:
+    int display_w = 100;
+    int display_h = 100;
 };
 
 } // namespace ui
