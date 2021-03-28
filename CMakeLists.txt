@@ -106,7 +106,9 @@ set( EXECUTABLE_NAME app )
 
 add_executable( ${EXECUTABLE_NAME} ${OS_BUNDLE_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/application.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/fonts.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/glfw_window.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/styles.cpp )
 
 target_include_directories( ${EXECUTABLE_NAME} PRIVATE

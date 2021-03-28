@@ -1,6 +1,6 @@
 #pragma once
-#ifndef SPIRIT_IMGUI_FONTS_HPP
-#define SPIRIT_IMGUI_FONTS_HPP
+#ifndef IMGUI_APP_FONTS_FONTS_HPP
+#define IMGUI_APP_FONTS_FONTS_HPP
 
 #include <fonts/fontawesome5_icons.h>
 
