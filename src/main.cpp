@@ -551,9 +551,9 @@ int init()
     apply_charcoal_style();
 
     // Load Fonts
-    font_14 = fonts::font_combined( 14 );
-    font_16 = fonts::font_combined( 16 );
-    font_18 = fonts::font_combined( 18 );
+    font_14 = fonts::karla( 14 );
+    font_16 = fonts::karla( 16 );
+    font_18 = fonts::karla( 18 );
 
     // Cursor callbacks
     glfwSetMouseButtonCallback( g_window, ImGui_ImplGlfw_MouseButtonCallback );
