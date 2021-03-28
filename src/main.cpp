@@ -74,19 +74,18 @@ static void draw_gl( int display_w, int display_h )
     if( !gl_initialized )
     {
         // Shader sources
-        const GLchar * vertexSource = "attribute vec4 position;                     \n"
-                                      "void main()                                  \n"
-                                      "{                                            \n"
-                                      "  gl_Position = vec4(position.xyz, 1.0);     \n"
-                                      "}                                            \n";
-        const GLchar * fragmentSource = "precision mediump float;\n"
-                                        "void main()                                  \n"
-                                        "{                                            \n"
-                                        "  //gl_FragColor[0] = gl_FragCoord.x*200.0;    \n"
-                                        "  //gl_FragColor[1] = gl_FragCoord.y*200.0;    \n"
-                                        "  //gl_FragColor[2] = 0.5;                     \n"
-                                        "  gl_FragColor = vec4(0.149,0.141,0.912,1.0);\n"
-                                        "}                                            \n";
+        const GLchar * vertexSource = "attribute vec4 position;                 \n"
+                                      "void main()                              \n"
+                                      "{                                        \n"
+                                      "  gl_Position = vec4(position.xyz, 1.0); \n"
+                                      "}                                        \n";
+        const GLchar * fragmentSource = "precision mediump float;                    \n"
+                                        "uniform vec2 resolution;                    \n"
+                                        "void main()                                 \n"
+                                        "{                                           \n"
+                                        "  vec2 p = gl_FragCoord.xy / resolution.xy; \n"
+                                        "  gl_FragColor = vec4(p.x,p.y,0.912,1.0);   \n"
+                                        "}                                           \n";
 
         // Create a Vertex Buffer Object and copy the vertex data to it
         GLuint vbo;
@@ -114,6 +113,19 @@ static void draw_gl( int display_w, int display_h )
         glLinkProgram( shaderProgram );
         glUseProgram( shaderProgram );
 
+        // Check the program
+        GLint Result = GL_FALSE;
+        int InfoLogLength;
+        glGetProgramiv( shaderProgram, GL_LINK_STATUS, &Result );
+        glGetProgramiv( shaderProgram, GL_INFO_LOG_LENGTH, &InfoLogLength );
+        if( InfoLogLength > 0 )
+        {
+            std::string ProgramErrorMessage;
+            ProgramErrorMessage.reserve( InfoLogLength + 1 );
+            glGetProgramInfoLog( shaderProgram, InfoLogLength, NULL, ProgramErrorMessage.data() );
+            fmt::print( "GL shader program error: {}\n", ProgramErrorMessage );
+        }
+
         gl_initialized = true;
     }
 
@@ -127,6 +139,8 @@ static void draw_gl( int display_w, int display_h )
     glVertexAttribPointer( posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0 );
 
     glUseProgram( shaderProgram );
+
+    glUniform2f( glGetUniformLocation( shaderProgram, "resolution" ), display_w, display_h );
 
     // Draw a triangle from the 3 vertices
     glDrawArrays( GL_TRIANGLES, 0, 3 );
@@ -379,7 +393,6 @@ try
 #endif
 
 #ifdef __EMSCRIPTEN__
-    glfwSetWindowSize( g_window, width, height );
     emscripten_webgl_make_context_current( context_imgui );
     glViewport( 0, 0, display_w, display_h );
     glClearColor( 0, 0, 0, 0 );
