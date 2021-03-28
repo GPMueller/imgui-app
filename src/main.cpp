@@ -6,6 +6,7 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 
 #include <glad/glad.h>
@@ -18,8 +19,9 @@
 #include <cmath>
 
 GLFWwindow * g_window;
+
 static ImVec4 clear_color       = ImVec4( 0.4f, 0.4f, 0.4f, 1.f );
-static bool show_demo_window    = true;
+static bool show_demo_window    = false;
 static bool show_another_window = false;
 static int selected_mode        = 1;
 
@@ -34,11 +36,18 @@ static ImFont * font_14 = nullptr;
 static ImFont * font_16 = nullptr;
 static ImFont * font_18 = nullptr;
 
+static bool gl_initialized = false;
+
 #ifdef __EMSCRIPTEN__
+
 EM_JS( int, js_canvas_get_width, (), { return Module.canvas.width; } );
 EM_JS( int, js_canvas_get_height, (), { return Module.canvas.height; } );
 EM_JS( void, js_resize_canvas, (), { resizeCanvas(); } );
 EM_JS( void, js_notify, ( const char * message, int length ), { notifyMessage( UTF8ToString( message, length ) ); } );
+
+EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context_imgui;
+EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context_render;
+
 #endif
 
 static void notification( const std::string & message )
@@ -57,9 +66,70 @@ static void glfw_error_callback( int error, const char * description )
 
 static void draw_gl( int display_w, int display_h )
 {
+    // An array of 3 vectors which represents 3 vertices
+    static const GLfloat g_vertex_buffer_data[] = {
+        -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+    };
+    static GLuint shaderProgram;
+    if( !gl_initialized )
+    {
+        // Shader sources
+        const GLchar * vertexSource = "attribute vec4 position;                     \n"
+                                      "void main()                                  \n"
+                                      "{                                            \n"
+                                      "  gl_Position = vec4(position.xyz, 1.0);     \n"
+                                      "}                                            \n";
+        const GLchar * fragmentSource = "precision mediump float;\n"
+                                        "void main()                                  \n"
+                                        "{                                            \n"
+                                        "  //gl_FragColor[0] = gl_FragCoord.x*200.0;    \n"
+                                        "  //gl_FragColor[1] = gl_FragCoord.y*200.0;    \n"
+                                        "  //gl_FragColor[2] = 0.5;                     \n"
+                                        "  gl_FragColor = vec4(0.149,0.141,0.912,1.0);\n"
+                                        "}                                            \n";
+
+        // Create a Vertex Buffer Object and copy the vertex data to it
+        GLuint vbo;
+        glGenBuffers( 1, &vbo );
+
+        GLfloat vertices[] = { 0.0f, 0.5f, 0.5f, -0.5f, -0.5f, -0.5f };
+
+        glBindBuffer( GL_ARRAY_BUFFER, vbo );
+        glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), vertices, GL_STATIC_DRAW );
+
+        // Create and compile the vertex shader
+        GLuint vertexShader = glCreateShader( GL_VERTEX_SHADER );
+        glShaderSource( vertexShader, 1, &vertexSource, nullptr );
+        glCompileShader( vertexShader );
+
+        // Create and compile the fragment shader
+        GLuint fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
+        glShaderSource( fragmentShader, 1, &fragmentSource, nullptr );
+        glCompileShader( fragmentShader );
+
+        // Link the vertex and fragment shader into a shader program
+        shaderProgram = glCreateProgram();
+        glAttachShader( shaderProgram, vertexShader );
+        glAttachShader( shaderProgram, fragmentShader );
+        glLinkProgram( shaderProgram );
+        glUseProgram( shaderProgram );
+
+        gl_initialized = true;
+    }
+
     glViewport( 0, 0, display_w, display_h );
     glClearColor( clear_color.x, clear_color.y, clear_color.z, clear_color.w );
     glClear( GL_COLOR_BUFFER_BIT );
+
+    // Specify the layout of the vertex data
+    GLint posAttrib = glGetAttribLocation( shaderProgram, "position" );
+    glEnableVertexAttribArray( posAttrib );
+    glVertexAttribPointer( posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0 );
+
+    glUseProgram( shaderProgram );
+
+    // Draw a triangle from the 3 vertices
+    glDrawArrays( GL_TRIANGLES, 0, 3 );
 }
 
 void apply_charcoal_style( ImGuiStyle * dst = NULL )
@@ -297,12 +367,23 @@ static void show_overlay( bool * p_open )
 }
 
 void loop()
+try
 {
+    int display_w, display_h;
 #ifdef __EMSCRIPTEN__
-    int width  = js_canvas_get_width();
-    int height = js_canvas_get_height();
+    display_w = js_canvas_get_width();
+    display_h = js_canvas_get_height();
+    glfwSetWindowSize( g_window, display_w, display_h );
+#else
+    glfwGetFramebufferSize( g_window, &display_w, &display_h );
+#endif
 
+#ifdef __EMSCRIPTEN__
     glfwSetWindowSize( g_window, width, height );
+    emscripten_webgl_make_context_current( context_imgui );
+    glViewport( 0, 0, display_w, display_h );
+    glClearColor( 0, 0, 0, 0 );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 #endif
 
     glfwPollEvents();
@@ -364,15 +445,22 @@ void loop()
 
     ImGui::Render();
 
-    int display_w, display_h;
-    glfwMakeContextCurrent( g_window );
-    glfwGetFramebufferSize( g_window, &display_w, &display_h );
-
-    draw_gl( display_w, display_h );
-
     ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
 
     glfwSwapBuffers( g_window );
+
+#ifdef __EMSCRIPTEN__
+    emscripten_webgl_make_context_current( context_render );
+#endif
+    draw_gl( display_w, display_h );
+}
+catch( const std::exception & e )
+{
+    fmt::print( "Caught std::exception in draw loop! Message: {}\n", e.what() );
+}
+catch( ... )
+{
+    fmt::print( "Caught unknown exception in draw loop!\n" );
 }
 
 int init()
@@ -400,7 +488,10 @@ int init()
     int canvasHeight = 720;
     g_window         = glfwCreateWindow( canvasWidth, canvasHeight, "WebGui Demo", NULL, NULL );
     glfwMakeContextCurrent( g_window );
-    glfwSwapInterval( 1 ); // Enable vsync
+#ifndef __EMSCRIPTEN__
+    // Enable vsync
+    glfwSwapInterval( 1 );
+#endif
 
     if( g_window == NULL )
     {
@@ -409,7 +500,8 @@ int init()
         return -1;
     }
 
-    gladLoadGL( (GLADloadfunc)glfwGetProcAddress ); // Initialize GLAD
+    // Initialize GLAD
+    gladLoadGL( (GLADloadfunc)glfwGetProcAddress );
 
     // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
@@ -419,6 +511,39 @@ int init()
 
     ImGui_ImplGlfw_InitForOpenGL( g_window, false );
     ImGui_ImplOpenGL3_Init();
+
+#ifdef __EMSCRIPTEN__
+    EmscriptenWebGLContextAttributes attrs_imgui;
+    emscripten_webgl_init_context_attributes( &attrs_imgui );
+    attrs_imgui.majorVersion = 1;
+    attrs_imgui.minorVersion = 0;
+    // attrs_imgui.alpha        = 1;
+
+    context_imgui = emscripten_webgl_create_context( "#imgui-canvas", &attrs_imgui );
+    if( context_imgui <= 0 )
+    {
+        fmt::print( "ImGui WebGL context could not be created! Got {}\n", context_imgui );
+        context_imgui = emscripten_webgl_get_current_context();
+    }
+    if( context_imgui <= 0 )
+    {
+        fmt::print( "ImGui WebGL context not available! Got {}\n", context_imgui );
+    }
+    fmt::print( "ImGui WebGL context: {}\n", context_imgui );
+
+    EmscriptenWebGLContextAttributes attrs_render;
+    emscripten_webgl_init_context_attributes( &attrs_render );
+    attrs_render.majorVersion = 1;
+    attrs_render.minorVersion = 0;
+
+    context_render = emscripten_webgl_create_context( "#render-canvas", &attrs_render );
+    if( context_render <= 0 )
+        fmt::print( "Render WebGL context could not be created! Got {}\n", context_render );
+    fmt::print( "Render WebGL context: {}\n", context_render );
+
+    emscripten_webgl_make_context_current( context_imgui );
+#endif
+    fmt::print( "OpenGL Version: {}\n", glGetString( GL_VERSION ) );
 
     // Setup style
     // ImGui::StyleColorsDark();
@@ -454,13 +579,13 @@ void quit()
     glfwTerminate();
 }
 
-extern "C" int main( int argc, char ** argv )
+int main()
 {
     if( init() != 0 )
         return 1;
 
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop( loop, 0, 1 );
+    emscripten_set_main_loop( loop, 0, true );
 #else
     while( !glfwWindowShouldClose( g_window ) )
     {
