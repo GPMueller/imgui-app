@@ -1,6 +1,6 @@
 #pragma once
-#ifndef IMGUI_CMAKE_IMGUI_IMPL_COUSINE_REGULAR_H
-#define IMGUI_CMAKE_IMGUI_IMPL_COUSINE_REGULAR_H
+#ifndef IMGUI_APP_FONTS_COUSINE_REGULAR_H
+#define IMGUI_APP_FONTS_COUSINE_REGULAR_H
 
 // File: 'Cousine-Regular.ttf' (43912 bytes)
 // Exported using binary_to_compressed_c.cpp

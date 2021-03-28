@@ -1,6 +1,6 @@
 #pragma once
-#ifndef IMGUI_CMAKE_IMGUI_IMPL_FONT_FONTAWESOME_HPP
-#define IMGUI_CMAKE_IMGUI_IMPL_FONT_FONTAWESOME_HPP
+#ifndef IMGUI_APP_FONTS_FONT_FONTAWESOME_HPP
+#define IMGUI_APP_FONTS_FONT_FONTAWESOME_HPP
 
 // File: 'FontAwesome5Free-Solid1.ttf' (302704 bytes)
 // Exported using binary_to_compressed_c.cpp

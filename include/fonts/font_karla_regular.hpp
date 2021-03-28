@@ -1,6 +1,6 @@
 #pragma once
-#ifndef IMGUI_CMAKE_IMGUI_IMPL_FONT_KARLA_REGULAR_HPP
-#define IMGUI_CMAKE_IMGUI_IMPL_FONT_KARLA_REGULAR_HPP
+#ifndef IMGUI_APP_FONTS_FONT_KARLA_REGULAR_HPP
+#define IMGUI_APP_FONTS_FONT_KARLA_REGULAR_HPP
 
 // File: 'Karla-Regular.ttf' (16848 bytes)
 // Exported using binary_to_compressed_c.cpp

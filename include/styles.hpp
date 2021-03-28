@@ -1,6 +1,6 @@
 #pragma once
-#ifndef SPIRIT_IMGUI_STYLES_HPP
-#define SPIRIT_IMGUI_STYLES_HPP
+#ifndef IMGUI_APP_FONTS_STYLES_HPP
+#define IMGUI_APP_FONTS_STYLES_HPP
 
 #include <imgui/imgui.h>
 
