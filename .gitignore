@@ -1,6 +1,6 @@
 build/
 
-ui-web/js/
+webapp/js/
 
 imgui.ini
 imgui_state.ini
