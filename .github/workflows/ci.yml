@@ -130,12 +130,22 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+    - name: 📄 Generate a changelog
+      id: changelog
+      uses: metcalfc/changelog-generator@v1.0.0
+      with:
+        myToken: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 📄 Print the changelog
+      run: echo "${{ steps.changelog.outputs.changelog }}"
+
     - name: 🎉 Create draft release
       id: draft_release
       uses: actions/create-release@v1
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
+        body: ${{ steps.changelog.outputs.changelog }}
         draft: true
 
     - uses: actions/download-artifact@master
