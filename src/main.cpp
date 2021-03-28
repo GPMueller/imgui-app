@@ -21,6 +21,7 @@
 GLFWwindow * g_window;
 
 static ImVec4 clear_color       = ImVec4( 0.4f, 0.4f, 0.4f, 1.f );
+static float gradient           = 1.0f;
 static bool show_demo_window    = false;
 static bool show_another_window = false;
 static int selected_mode        = 1;
@@ -32,9 +33,11 @@ static double wx_start, wy_start;
 static double cx_start, cy_start;
 static bool main_window_maximized = false;
 
-static ImFont * font_14 = nullptr;
-static ImFont * font_16 = nullptr;
-static ImFont * font_18 = nullptr;
+static ImFont * font_cousine = nullptr;
+static ImFont * font_12      = nullptr;
+static ImFont * font_14      = nullptr;
+static ImFont * font_16      = nullptr;
+static ImFont * font_18      = nullptr;
 
 static bool gl_initialized = false;
 
@@ -79,13 +82,14 @@ static void draw_gl( int display_w, int display_h )
                                       "{                                        \n"
                                       "  gl_Position = vec4(position.xyz, 1.0); \n"
                                       "}                                        \n";
-        const GLchar * fragmentSource = "precision mediump float;                    \n"
-                                        "uniform vec2 resolution;                    \n"
-                                        "void main()                                 \n"
-                                        "{                                           \n"
-                                        "  vec2 p = gl_FragCoord.xy / resolution.xy; \n"
-                                        "  gl_FragColor = vec4(p.x,p.y,0.912,1.0);   \n"
-                                        "}                                           \n";
+        const GLchar * fragmentSource = "precision mediump float;                              \n"
+                                        "uniform vec2 resolution;                              \n"
+                                        "uniform float gradient;                               \n"
+                                        "void main()                                           \n"
+                                        "{                                                     \n"
+                                        "  vec2 p = gradient *gl_FragCoord.xy / resolution.xy; \n"
+                                        "  gl_FragColor = vec4(p.x,p.y,0.912,1.0);             \n"
+                                        "}                                                     \n";
 
         // Create a Vertex Buffer Object and copy the vertex data to it
         GLuint vbo;
@@ -140,6 +144,7 @@ static void draw_gl( int display_w, int display_h )
 
     glUseProgram( shaderProgram );
 
+    glUniform1f( glad_glGetUniformLocation( shaderProgram, "gradient" ), gradient );
     glUniform2f( glGetUniformLocation( shaderProgram, "resolution" ), display_w, display_h );
 
     // Draw a triangle from the 3 vertices
@@ -210,7 +215,7 @@ void apply_charcoal_style( ImGuiStyle * dst = NULL )
 static void show_menu_bar( GLFWwindow * window )
 {
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 7.f, 7.f ) );
-    ImGui::PushFont( font_16 );
+    ImGui::PushFont( font_14 );
 
     if( ImGui::BeginMainMenuBar() )
     {
@@ -333,6 +338,8 @@ static void help_marker( const char * description )
 
 static void show_overlay( bool * p_open )
 {
+    ImGui::PushFont( font_cousine );
+
     const float DISTANCE = 50.0f;
     static int corner    = 0;
     ImGuiIO & io         = ImGui::GetIO();
@@ -350,16 +357,19 @@ static void show_overlay( bool * p_open )
                                     | ImGuiWindowFlags_NoNav;
     if( corner != -1 )
         window_flags |= ImGuiWindowFlags_NoMove;
-    if( ImGui::Begin( "Example: Simple overlay", p_open, window_flags ) )
+    if( ImGui::Begin( "Simple overlay", p_open, window_flags ) )
     {
-        ImGui::Text( "Simple overlay\n"
-                     "in the corner of the screen.\n"
-                     "(right-click to change position)" );
-        ImGui::Separator();
+        ImGui::Text( "%.1f FPS (avg. %.3f ms/frame)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate );
+
         if( ImGui::IsMousePosValid() )
-            ImGui::Text( "Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y );
+            ImGui::Text( "Mouse Position: (%.1f, %.1f)", io.MousePos.x, io.MousePos.y );
         else
             ImGui::Text( "Mouse Position: <invalid>" );
+
+        ImGui::Separator();
+
+        ImGui::Text( "(right-click to change position)" );
+
         if( ImGui::BeginPopupContextWindow() )
         {
             if( ImGui::MenuItem( "Custom", NULL, corner == -1 ) )
@@ -376,8 +386,10 @@ static void show_overlay( bool * p_open )
                 *p_open = false;
             ImGui::EndPopup();
         }
+        ImGui::End();
     }
-    ImGui::End();
+
+    ImGui::PopFont();
 }
 
 void loop()
@@ -405,7 +417,7 @@ try
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::PushFont( font_14 );
+    ImGui::PushFont( font_12 );
 
     show_menu_bar( g_window );
     bool p_open = true;
@@ -426,12 +438,27 @@ try
         ImGui::ShowDemoWindow( &show_demo_window );
     }
 
+    ImGui::SetNextWindowPos( { 50, 150 }, ImGuiCond_FirstUseEver );
+    ImGui::SetNextWindowSizeConstraints( { 400, 100 }, { FLT_MAX, FLT_MAX } );
+    if( ImGui::Begin( "Demo" ) )
     {
-        static float f     = 0.0f;
         static int counter = 0;
-        ImGui::Text( "Hello, world!" );
-        ImGui::SliderFloat( "float", &f, 0.0f, 1.0f );
-        ImGui::ColorEdit3( "clear color", (float *)&clear_color );
+        if( ImGui::Button( "Button" ) )
+            counter++;
+        ImGui::SameLine();
+        ImGui::Text( "counter = %d", counter );
+
+        ImGui::Dummy( { 0, 10 } );
+
+        ImGui::TextUnformatted( "Triangle gradient" );
+        ImGui::SameLine();
+        ImGui::SliderFloat( "##gradient-slider", &gradient, 0.0f, 2.0f );
+
+        ImGui::TextUnformatted( "Background colour" );
+        ImGui::SameLine();
+        ImGui::ColorEdit3( "##background-color-edit", (float *)&clear_color );
+
+        ImGui::Dummy( { 0, 10 } );
 
         ImGui::Text( "Windows" );
         ImGui::Checkbox( "Demo Window", &show_demo_window );
@@ -442,16 +469,7 @@ try
         if( ImGui::Button( "notification" ) )
             notification( "This is a notification message" );
 
-        ImGui::Dummy( { 0, 10 } );
-
-        if( ImGui::Button( "Button" ) )
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text( "counter = %d", counter );
-
-        ImGui::Text(
-            "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-            ImGui::GetIO().Framerate );
+        ImGui::End();
     }
 
     ImGui::PopFont();
@@ -564,9 +582,11 @@ int init()
     apply_charcoal_style();
 
     // Load Fonts
-    font_14 = fonts::karla( 14 );
-    font_16 = fonts::karla( 16 );
-    font_18 = fonts::karla( 18 );
+    font_cousine = fonts::cousine( 12 );
+    font_12      = fonts::karla( 12 );
+    font_14      = fonts::karla( 14 );
+    font_16      = fonts::karla( 16 );
+    font_18      = fonts::karla( 18 );
 
     // Cursor callbacks
     glfwSetMouseButtonCallback( g_window, ImGui_ImplGlfw_MouseButtonCallback );
