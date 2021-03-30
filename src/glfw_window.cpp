@@ -36,7 +36,7 @@ void GlfwWindow::update()
     display_h = js_canvas_get_height();
     glfwSetWindowSize( glfw_window_handle, display_w, display_h );
 #else
-    // glfwGetFramebufferSize( glfw_window_handle, &display_w, &display_h );
+    glfwGetFramebufferSize( glfw_window_handle, &display_w, &display_h );
 #endif
 }
 

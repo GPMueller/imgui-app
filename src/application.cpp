@@ -231,6 +231,7 @@ void Application::draw()
 
     // --------------- ImGui+GLFW+GL UI context setup
 #ifdef __EMSCRIPTEN__
+    // Canvas resizes don't trigger the framebuffer resize callback
     const auto & [w, h] = glfw_window.get_size();
     emscripten_webgl_make_context_current( context_imgui );
     glViewport( 0, 0, w, h );
@@ -399,6 +400,10 @@ Application::Application( const std::string & title ) : glfw_window( title )
 
 #ifdef __EMSCRIPTEN__
     js_resize_canvas();
+#else
+    glfw_window.update();
+    const auto & [w, h] = glfw_window.get_size();
+    this->resize( w, h );
 #endif
 }
 
