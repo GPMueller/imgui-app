@@ -115,18 +115,17 @@ void Application::draw_menu_bar()
             ImGui::EndMenu();
         }
 
-        auto io            = ImGui::GetIO();
-        auto & style       = ImGui::GetStyle();
-        float font_size_px = 14;
-        float right_edge   = ImGui::GetWindowContentRegionMax().x;
-        float bar_height   = ImGui::GetWindowContentRegionMax().y + 2 * style.FramePadding.y;
-        float width;
+        auto & style     = ImGui::GetStyle();
+        float right_edge = ImGui::GetWindowContentRegionMax().x;
+        ImGui::PushStyleVar( ImGuiStyleVar_SelectableTextAlign, ImVec2( .5f, .5f ) );
 
-        width = 2.5 * font_size_px;
-        ImGui::SameLine( right_edge - width );
+        ImVec2 text_size = ImGui::CalcTextSize( ICON_FA_SUN, NULL, true );
+        float width      = 2.5 * font_14->FontSize;
+        float height     = text_size.y + 2 * style.ItemInnerSpacing.y;
+        ImGui::SetCursorPos( { right_edge - width + style.FramePadding.x, style.FramePadding.y } );
         if( dark_mode )
         {
-            if( ImGui::Button( ICON_FA_SUN, ImVec2( width, bar_height ) ) )
+            if( ImGui::Button( ICON_FA_SUN, ImVec2( width, height ) ) )
             {
                 styles::apply_light();
                 opengl_renderer.background_color[0] = 0.7f;
@@ -139,7 +138,7 @@ void Application::draw_menu_bar()
         }
         else
         {
-            if( ImGui::Button( ICON_FA_MOON, ImVec2( width, bar_height ) ) )
+            if( ImGui::Button( ICON_FA_MOON, ImVec2( width, height ) ) )
             {
                 styles::apply_charcoal();
                 opengl_renderer.background_color[0] = 0.4f;
@@ -150,19 +149,24 @@ void Application::draw_menu_bar()
                 dark_mode = true;
             }
         }
-        right_edge -= ( width + style.FramePadding.x );
 
-        std::string label;
+        right_edge -= ( width + 4 * style.ItemSpacing.x );
+
         static int N = 4;
         for( int n = N; n > 0; n-- )
         {
-            label = fmt::format( "Mode {}", n );
-            width = label.length() * font_size_px;
-            ImGui::SameLine( right_edge - width );
-            if( ImGui::Selectable( label.c_str(), selected_mode == n, 0, ImVec2( width, bar_height ) ) )
+            std::string label = fmt::format( "Mode {}", n );
+            text_size         = ImGui::CalcTextSize( label.c_str(), NULL, true );
+            width             = text_size.x + 2 * style.ItemInnerSpacing.x;
+            height            = text_size.y + 1 * style.ItemInnerSpacing.y;
+
+            ImGui::SameLine( right_edge - width, 0 );
+            if( ImGui::Selectable( label.c_str(), selected_mode == n, 0, ImVec2( width, height ) ) )
                 selected_mode = n;
-            right_edge -= ( width + style.FramePadding.x );
+            right_edge -= ( width + 2 * style.ItemInnerSpacing.x );
         }
+
+        ImGui::PopStyleVar(); // ImGuiStyleVar_SelectableTextAlign
 
         ImGui::EndMainMenuBar();
     }
