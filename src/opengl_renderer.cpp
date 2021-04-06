@@ -1,18 +1,24 @@
 #include <opengl_renderer.hpp>
 
+#ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
+#else
+#include <GLES3/gl3.h>
+#endif
 
 #include <fmt/format.h>
 
 #include <string>
 
+// clang-format off
 #ifdef __EMSCRIPTEN__
-#define VERT_SHADER_HEADER "#version 100\nprecision highp float;\n#define in attribute\n#define out varying\n"
-#define FRAG_SHADER_HEADER "#version 100\nprecision highp float;\n#define in varying\n#define fo_FragColor gl_FragColor"
+    #define VERT_SHADER_HEADER "#version 100\n#define in attribute\n#define out varying\nprecision mediump float;\n"
+    #define FRAG_SHADER_HEADER "#version 100\n#define in varying\n#define fo_FragColor gl_FragColor\nprecision mediump float;\n"
 #else
-#define VERT_SHADER_HEADER "#version 330\n"
-#define FRAG_SHADER_HEADER "#version 330\nout vec4 fo_FragColor;\n"
+    #define VERT_SHADER_HEADER "#version 330\n"
+    #define FRAG_SHADER_HEADER "#version 330\nout vec4 fo_FragColor;\n"
 #endif
+// clang-format on
 
 namespace ui
 {
@@ -25,9 +31,11 @@ const std::string GetGLErrorStr( GLenum err )
         case GL_INVALID_ENUM: return "Invalid enum";
         case GL_INVALID_VALUE: return "Invalid value";
         case GL_INVALID_OPERATION: return "Invalid operation";
+        case GL_OUT_OF_MEMORY: return "Out of memory";
+#ifndef __EMSCRIPTEN__
         case GL_STACK_OVERFLOW: return "Stack overflow";
         case GL_STACK_UNDERFLOW: return "Stack underflow";
-        case GL_OUT_OF_MEMORY: return "Out of memory";
+#endif
         default: return "Unknown error";
     }
 }
@@ -160,7 +168,7 @@ void OpenglRenderer::draw()
     glUseProgram( shader_program );
     gl_check_error( "--- 6 --- GL draw error: " );
 
-    glUniform1f( glad_glGetUniformLocation( shader_program, "gradient" ), gradient );
+    glUniform1f( glGetUniformLocation( shader_program, "gradient" ), gradient );
     glUniform2f( glGetUniformLocation( shader_program, "resolution" ), framebuffer_w, framebuffer_h );
     gl_check_error( "--- 7 --- GL draw error: " );
 
