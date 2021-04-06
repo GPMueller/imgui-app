@@ -130,6 +130,8 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+    - uses: actions/checkout@v2
+
     - name: 📄 Generate a changelog
       id: changelog
       uses: metcalfc/changelog-generator@v1.0.0
