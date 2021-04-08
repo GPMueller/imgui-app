@@ -2,6 +2,8 @@ build/
 
 webapp/js/
 
+src/version.cpp
+
 imgui.ini
 imgui_state.ini
 

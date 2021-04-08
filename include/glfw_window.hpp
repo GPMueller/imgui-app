@@ -14,6 +14,7 @@ class GlfwWindow
 {
 public:
     GlfwWindow( const std::string & title );
+    bool set_app_icon( const std::string & icon );
     void resize( int width, int height );
     std::pair<int, int> get_size();
 

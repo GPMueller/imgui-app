@@ -26,10 +26,12 @@ public:
 protected:
     void draw_menu_bar();
     void draw_overlay();
+    void draw_about();
 
     bool show_demo_window    = false;
     bool show_another_window = false;
     bool show_overlay        = true;
+    bool show_about          = false;
     int selected_mode        = 1;
 
     bool dark_mode = true;

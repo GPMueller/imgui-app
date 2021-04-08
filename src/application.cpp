@@ -11,7 +11,9 @@
 
 #include <application.hpp>
 #include <fonts.hpp>
+#include <image.hpp>
 #include <styles.hpp>
+#include <version.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -111,6 +113,7 @@ void Application::draw_menu_bar()
             }
             if( ImGui::MenuItem( "About" ) )
             {
+                this->show_about = !this->show_about;
             }
             ImGui::EndMenu();
         }
@@ -229,6 +232,56 @@ void Application::draw_overlay()
     ImGui::PopFont();
 }
 
+void Application::draw_about()
+{
+    if( !this->show_about )
+        return;
+
+    static bool logo_loaded          = false;
+    static int logo_width            = 0;
+    static int logo_height           = 0;
+    static unsigned int logo_texture = 0;
+
+    auto & style = ImGui::GetStyle();
+    ImVec2 spacing{ 2 * style.FramePadding.x, 2 * style.FramePadding.y };
+
+    if( !logo_loaded )
+    {
+        images::Image logo( "resources/Logo.png" );
+        if( logo.image_data )
+        {
+            logo.get_gl_texture( logo_texture );
+            logo_width  = logo.width;
+            logo_height = logo.height;
+            logo_loaded = true;
+        }
+    }
+
+    ImGui::SetNextWindowSizeConstraints( { 300, 200 }, { 500, 300 } );
+    ImGui::Begin(
+        fmt::format( "About ImGui App v{}", version::version() ).c_str(), &show_about, ImGuiWindowFlags_NoCollapse );
+
+    float scaled_width  = ImGui::GetContentRegionAvailWidth() * 0.95f;
+    float scaled_height = logo_height * scaled_width / logo_width;
+    ImGui::SameLine( ImGui::GetContentRegionAvailWidth() * 0.05f, 0 );
+    ImGui::Image( (void *)(intptr_t)logo_texture, ImVec2( scaled_width, scaled_height ) );
+
+    ImGui::Dummy( spacing );
+
+    std::string app_version  = fmt::format( "ImGui App {}", version::full() );
+    std::string app_compiler = fmt::format( "Built with {}", version::compiler_full() );
+
+    auto text_size = ImGui::CalcTextSize( app_version.c_str() );
+    ImGui::SetCursorPosX( 0.5f * ( ImGui::GetContentRegionAvailWidth() - text_size.x ) );
+    ImGui::TextUnformatted( app_version.c_str() );
+
+    text_size = ImGui::CalcTextSize( app_compiler.c_str() );
+    ImGui::SetCursorPosX( 0.5f * ( ImGui::GetContentRegionAvailWidth() - text_size.x ) );
+    ImGui::TextUnformatted( app_compiler.c_str() );
+
+    ImGui::End();
+}
+
 void Application::draw()
 {
     this->glfw_window.update();
@@ -252,6 +305,7 @@ void Application::draw()
 
     draw_menu_bar();
     draw_overlay();
+    draw_about();
 
     if( show_another_window )
     {
@@ -298,9 +352,9 @@ void Application::draw()
 
         if( ImGui::Button( "notification" ) )
             notification( "This is a notification message" );
-
-        ImGui::End();
     }
+
+    ImGui::End();
 
     ImGui::PopFont();
 
@@ -394,6 +448,10 @@ Application::Application( const std::string & title ) : glfw_window( title )
     font_14      = fonts::karla( 14 );
     font_16      = fonts::karla( 16 );
     font_18      = fonts::karla( 18 );
+
+    // Icon
+    if( !glfw_window.set_app_icon( "resources/Icon.png" ) )
+        fmt::print( "Failed to set application icon\n" );
 
     // Cursor callbacks
     glfwSetMouseButtonCallback( glfw_window.glfw_window_handle, ImGui_ImplGlfw_MouseButtonCallback );

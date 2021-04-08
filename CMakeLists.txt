@@ -9,7 +9,6 @@ message( STATUS "Compiler ID: ${CMAKE_CXX_COMPILER_ID} (${CMAKE_CXX_COMPILER_VER
 
 
 #--------------------------------------------------
-set( CMAKE_DISABLE_SOURCE_CHANGES  ON  )
 set( CMAKE_DISABLE_IN_SOURCE_BUILD ON  )
 set( CMAKE_CXX_STANDARD            17  )
 set( CMAKE_CXX_STANDARD_REQUIRED   ON  )
@@ -32,6 +31,9 @@ endif()
 
 
 #--------------------------------------------------
+#----- Add the cmake subdirectory
+list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
+
 #----- Set a default install directory in case none is passed
 if( CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR NOT CMAKE_INSTALL_PREFIX )
     set( CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "default install path" FORCE )
@@ -41,7 +43,7 @@ else()
 endif()
 
 #----- RPATH setup for the installation
-if( APPLE AND PLANNER_BUNDLE_APP )
+if( APPLE AND BUNDLE_APP )
     # Use the full RPATH of the build tree
     set( CMAKE_SKIP_BUILD_RPATH FALSE )
 
@@ -53,6 +55,17 @@ if( APPLE AND PLANNER_BUNDLE_APP )
     # directories outside of the build tree to the install RPATH
     set( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 endif()
+#--------------------------------------------------
+
+#--------------------------------------------------
+#----- CMakeRC module and library
+include( CMakeRC )
+
+cmrc_add_resource_library(
+    app_resources
+    NAMESPACE resources
+    resources/Icon.png
+    resources/Logo.png )
 #--------------------------------------------------
 
 
@@ -101,6 +114,35 @@ add_subdirectory( ${CMAKE_CURRENT_LIST_DIR}/thirdparty/fmt )
 
 
 #--------------------------------------------------
+#----- Meta information about the project
+set( META_APP_NAME        "ImGui App" )
+set( META_APP_DESCRIPTION "" )
+set( META_AUTHOR_ORGANIZATION "" )
+set( META_AUTHOR_DOMAIN       "" )
+set( META_AUTHOR_MAINTAINER   "Gideon Mueller" )
+set( META_AUTHOR_EMAIL        "gpmueller@outlook.com" )
+#----- Compiler
+set( META_COMPILER            "${CMAKE_CXX_COMPILER_ID}" )
+set( META_COMPILER_VERSION    "${CMAKE_CXX_COMPILER_VERSION}" )
+set( META_COMPILER_FULL       "${CMAKE_CXX_COMPILER_ID} (${CMAKE_CXX_COMPILER_VERSION})" )
+#----- Version info
+include( version )
+git_get_latest_tag(
+    META_GIT_TAG
+    META_GIT_BRANCH
+    META_GIT_REVISION
+    META_GIT_DIFF
+    META_VERSION_MAJOR
+    META_VERSION_MINOR
+    META_VERSION_PATCH )
+set( META_VERSION             "${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH}" )
+set( META_VERSION_REVISION    "${META_GIT_REVISION}" )
+#----- Generate version.cpp file
+configure_file( ${CMAKE_CURRENT_LIST_DIR}/cmake/version.cpp.in ${CMAKE_CURRENT_LIST_DIR}/src/version.cpp )
+#--------------------------------------------------
+
+
+#--------------------------------------------------
 #----- The application
 set( EXECUTABLE_NAME app )
 
@@ -109,14 +151,16 @@ add_executable( ${EXECUTABLE_NAME} ${OS_BUNDLE_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/src/application.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/fonts.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/glfw_window.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/image.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/opengl_renderer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/styles.cpp )
+    ${CMAKE_CURRENT_LIST_DIR}/src/styles.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/version.cpp )
 
 target_include_directories( ${EXECUTABLE_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/include
     ${THIRDPARTY_DIR} )
 
-target_link_libraries( ${EXECUTABLE_NAME} imgui fmt::fmt )
+target_link_libraries( ${EXECUTABLE_NAME} imgui app_resources fmt::fmt )
 
 if( IMGUI_COMPILE_GLFW )
     target_link_libraries( ${EXECUTABLE_NAME} glfw )

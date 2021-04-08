@@ -3,7 +3,7 @@ imgui-app
 
 A nanogui app example with a framework-like set of dependencies
 
-![Logo](Logo.png "App Logo")
+![Logo](resources/Logo.png "App Logo")
 
 Native application
 ----------------------------------------

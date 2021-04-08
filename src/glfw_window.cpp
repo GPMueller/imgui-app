@@ -1,4 +1,5 @@
 #include <glfw_window.hpp>
+#include <image.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -7,8 +8,12 @@
 #include <emscripten/html5.h>
 #endif
 
+#include <stb/stb_image.h>
+#include <stb/stb_image_resize.h>
+
 #include <fmt/format.h>
 
+#include <array>
 #include <exception>
 
 static void glfw_error_callback( int error, const char * description )
@@ -102,6 +107,39 @@ GlfwWindow::GlfwWindow( const std::string & title )
         // return -1;
         throw std::runtime_error( "Failed to open GLFW window." );
     }
+}
+
+bool GlfwWindow::set_app_icon( const std::string & icon )
+{
+#ifndef __EMSCRIPTEN__
+    images::Image image_icon( icon );
+
+    const int num_channels = 4;
+    const std::array<int, 15> resolutions{ 16, 20, 24, 28, 30, 31, 32, 40, 42, 47, 48, 56, 60, 63, 84 };
+    std::vector<std::vector<stbir_uint8>> data( resolutions.size() );
+    std::array<GLFWimage, resolutions.size()> glfw_images;
+
+    if( image_icon.image_data )
+    {
+        for( int i = 0; i < resolutions.size(); ++i )
+        {
+            glfw_images[i].pixels = new unsigned char[num_channels * resolutions[i] * resolutions[i]];
+            glfw_images[i].width  = resolutions[i];
+            glfw_images[i].height = resolutions[i];
+
+            stbir_resize_uint8(
+                image_icon.image_data, image_icon.width, image_icon.height, 0, glfw_images[i].pixels, resolutions[i],
+                resolutions[i], 0, num_channels );
+        }
+
+        glfwSetWindowIcon( glfw_window_handle, int( glfw_images.size() ), glfw_images.data() );
+        return true;
+    }
+
+    return false;
+#else
+    return true;
+#endif
 }
 
 GlfwWindow::~GlfwWindow()

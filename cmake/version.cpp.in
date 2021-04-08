@@ -1,0 +1,92 @@
+#include <version.hpp>
+
+#include <fmt/format.h>
+
+#include <algorithm>
+#include <array>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace version
+{
+
+constexpr const int VERSION_MAJOR = ${META_VERSION_MAJOR};
+constexpr const int VERSION_MINOR = ${META_VERSION_MINOR};
+constexpr const int VERSION_PATCH = ${META_VERSION_PATCH};
+
+constexpr const std::string_view VERSION_TAG( "${META_GIT_TAG}" );
+
+constexpr const std::string_view VERSION_SPECIFIER{ "${META_GIT_BRANCH}" }; // main="" develop="dev" others="feature"
+constexpr const std::string_view VERSION_REVISION{ "${META_GIT_REVISION}" };
+constexpr const std::string_view VERSION_DIFF{ "${META_GIT_DIFF}" };
+
+constexpr const std::string_view VERSION_COMPILER( "${META_COMPILER}" );
+constexpr const std::string_view VERSION_COMPILER_VERSION( "${META_COMPILER_VERSION}" );
+constexpr const std::string_view VERSION_COMPILER_FULL( "${META_COMPILER_FULL}" );
+
+const std::string VERSION_STR
+    = fmt::format( "{}.{}.{}{}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_SPECIFIER );
+const std::string VERSION_FULL_STR = fmt::format(
+    "v{}.{}.{}{} ({}{})", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_SPECIFIER, VERSION_REVISION,
+    VERSION_DIFF );
+
+// --------------------------------------------------------
+
+constexpr int major()
+{
+    return VERSION_MAJOR;
+}
+
+constexpr int minor()
+{
+    return VERSION_MINOR;
+}
+
+constexpr int patch()
+{
+    return VERSION_PATCH;
+}
+
+// --------------------------------------------------------
+
+const std::string_view version()
+{
+    return VERSION_STR;
+}
+
+const std::string_view revision()
+{
+    return VERSION_REVISION;
+}
+
+const std::string_view full()
+{
+    return VERSION_FULL_STR;
+}
+
+// --------------------------------------------------------
+
+const std::string_view latest_tag()
+{
+    return VERSION_TAG;
+}
+
+// --------------------------------------------------------
+
+const std::string_view compiler()
+{
+    return VERSION_COMPILER;
+}
+
+const std::string_view compiler_version()
+{
+    return VERSION_COMPILER_VERSION;
+}
+
+const std::string_view compiler_full()
+{
+    return VERSION_COMPILER_FULL;
+}
+
+} // namespace planner::utility::version
