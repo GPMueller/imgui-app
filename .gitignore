@@ -2,7 +2,7 @@ build/
 
 webapp/js/
 
-src/version.cpp
+include/version.hpp
 
 imgui.ini
 imgui_state.ini

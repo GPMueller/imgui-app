@@ -1,0 +1,27 @@
+#pragma once
+#ifndef IMGUI_APP_VERSION_HPP
+#define IMGUI_APP_VERSION_HPP
+
+#include <string_view>
+
+namespace version
+{
+
+inline constexpr int MAJOR = ${META_VERSION_MAJOR};
+inline constexpr int MINOR = ${META_VERSION_MINOR};
+inline constexpr int PATCH = ${META_VERSION_PATCH};
+
+inline constexpr std::string_view VERSION  = "${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH}${META_GIT_BRANCH}";
+inline constexpr std::string_view REVISION = "${META_GIT_REVISION}";
+inline constexpr std::string_view FULL     = "v${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH}${META_GIT_BRANCH} (${META_GIT_REVISION}${META_GIT_DIFF})";
+
+// The latest git tag
+inline constexpr std::string_view LATEST_TAG = "${META_GIT_TAG}";
+
+inline constexpr std::string_view COMPILER         = "${META_COMPILER}" ;
+inline constexpr std::string_view COMPILER_VERSION = "${META_COMPILER_VERSION}" ;
+inline constexpr std::string_view COMPILER_FULL    = "${META_COMPILER_FULL}";
+
+} // namespace version
+
+#endif

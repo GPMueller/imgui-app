@@ -259,7 +259,7 @@ void Application::draw_about()
 
     ImGui::SetNextWindowSizeConstraints( { 300, 200 }, { 500, 300 } );
     ImGui::Begin(
-        fmt::format( "About ImGui App v{}", version::version() ).c_str(), &show_about, ImGuiWindowFlags_NoCollapse );
+        fmt::format( "About ImGui App v{}", version::VERSION ).c_str(), &show_about, ImGuiWindowFlags_NoCollapse );
 
     float scaled_width  = ImGui::GetContentRegionAvailWidth() * 0.95f;
     float scaled_height = logo_height * scaled_width / logo_width;
@@ -268,8 +268,8 @@ void Application::draw_about()
 
     ImGui::Dummy( spacing );
 
-    std::string app_version  = fmt::format( "ImGui App {}", version::full() );
-    std::string app_compiler = fmt::format( "Built with {}", version::compiler_full() );
+    std::string app_version  = fmt::format( "ImGui App {}", version::FULL );
+    std::string app_compiler = fmt::format( "Built with {}", version::COMPILER_FULL );
 
     auto text_size = ImGui::CalcTextSize( app_version.c_str() );
     ImGui::SetCursorPosX( 0.5f * ( ImGui::GetContentRegionAvailWidth() - text_size.x ) );

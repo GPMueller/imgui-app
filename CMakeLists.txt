@@ -137,8 +137,8 @@ git_get_latest_tag(
     META_VERSION_PATCH )
 set( META_VERSION             "${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH}" )
 set( META_VERSION_REVISION    "${META_GIT_REVISION}" )
-#----- Generate version.cpp file
-configure_file( ${CMAKE_CURRENT_LIST_DIR}/cmake/version.cpp.in ${CMAKE_CURRENT_LIST_DIR}/src/version.cpp )
+#----- Generate version.hpp file
+configure_file( ${CMAKE_CURRENT_LIST_DIR}/cmake/version.hpp.in ${CMAKE_CURRENT_LIST_DIR}/include/version.hpp )
 #--------------------------------------------------
 
 
@@ -153,8 +153,7 @@ add_executable( ${EXECUTABLE_NAME} ${OS_BUNDLE_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/src/glfw_window.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/image.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/opengl_renderer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/styles.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/version.cpp )
+    ${CMAKE_CURRENT_LIST_DIR}/src/styles.cpp )
 
 target_include_directories( ${EXECUTABLE_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/include
