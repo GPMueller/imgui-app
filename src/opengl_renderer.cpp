@@ -23,7 +23,7 @@
 namespace ui
 {
 
-const std::string GetGLErrorStr( GLenum err )
+const std::string get_gl_error_str( GLenum err )
 {
     switch( err )
     {
@@ -78,7 +78,7 @@ void gl_check_error( const std::string & prefix )
 {
     GLenum err = glGetError();
     if( err != GL_NO_ERROR )
-        fmt::print( "{}{}\n", prefix, GetGLErrorStr( err ) );
+        fmt::print( "{}{}\n", prefix, get_gl_error_str( err ) );
 }
 
 void OpenglRenderer::initialize_gl()
@@ -143,7 +143,7 @@ void OpenglRenderer::initialize_gl()
 void OpenglRenderer::draw()
 {
     // An array of 3 vectors which represents 3 vertices
-    static const GLfloat g_vertex_buffer_data[] = {
+    static const GLfloat G_VERTEX_BUFFER_DATA[] = {
         -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
     };
 

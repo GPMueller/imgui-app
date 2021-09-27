@@ -114,22 +114,23 @@ bool GlfwWindow::set_app_icon( const std::string & icon )
 #ifndef __EMSCRIPTEN__
     images::Image image_icon( icon );
 
-    const int num_channels = 4;
-    const std::array<int, 15> resolutions{ 16, 20, 24, 28, 30, 31, 32, 40, 42, 47, 48, 56, 60, 63, 84 };
-    std::vector<std::vector<stbir_uint8>> data( resolutions.size() );
-    std::array<GLFWimage, resolutions.size()> glfw_images;
+    constexpr int NUM_CHANNELS = 4;
+    constexpr std::array<int, 15> RESOLUTIONS{ 16, 20, 24, 28, 30, 31, 32, 40, 42, 47, 48, 56, 60, 63, 84 };
+
+    std::vector<std::vector<stbir_uint8>> data( RESOLUTIONS.size() );
+    std::array<GLFWimage, RESOLUTIONS.size()> glfw_images;
 
     if( image_icon.image_data )
     {
-        for( int i = 0; i < resolutions.size(); ++i )
+        for( int i = 0; i < RESOLUTIONS.size(); ++i )
         {
-            glfw_images[i].pixels = new unsigned char[num_channels * resolutions[i] * resolutions[i]];
-            glfw_images[i].width  = resolutions[i];
-            glfw_images[i].height = resolutions[i];
+            glfw_images[i].pixels = new unsigned char[NUM_CHANNELS * RESOLUTIONS[i] * RESOLUTIONS[i]];
+            glfw_images[i].width  = RESOLUTIONS[i];
+            glfw_images[i].height = RESOLUTIONS[i];
 
             stbir_resize_uint8(
-                image_icon.image_data, image_icon.width, image_icon.height, 0, glfw_images[i].pixels, resolutions[i],
-                resolutions[i], 0, num_channels );
+                image_icon.image_data, image_icon.width, image_icon.height, 0, glfw_images[i].pixels, RESOLUTIONS[i],
+                RESOLUTIONS[i], 0, NUM_CHANNELS );
         }
 
         glfwSetWindowIcon( glfw_window_handle, int( glfw_images.size() ), glfw_images.data() );

@@ -16,6 +16,7 @@ public:
 
 private:
     void initialize_gl();
+
     bool gl_initialized         = false;
     unsigned int shader_program = -1;
 

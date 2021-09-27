@@ -24,7 +24,8 @@ Image::Image( const std::string_view file_name ) : file_name( file_name )
     auto fs   = cmrc::resources::get_filesystem();
     auto file = fs.open( this->file_name );
 
-    file_data  = std::string( file.cbegin(), file.cend() );
+    file_data = std::string( file.cbegin(), file.cend() );
+    // NOLINTNEXTLINE
     image_data = stbi_load_from_memory(
         reinterpret_cast<const unsigned char *>( file_data.c_str() ),
         int( file_data.size() ) * sizeof( char ) / sizeof( unsigned char ), &width, &height, NULL, 4 );

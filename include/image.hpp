@@ -1,6 +1,6 @@
 #pragma once
-#ifndef PLANNER_UTILITY_IMAGES_HPP
-#define PLANNER_UTILITY_IMAGES_HPP
+#ifndef IMGUI_APP_IMAGES_HPP
+#define IMGUI_APP_IMAGES_HPP
 
 #include <GLFW/glfw3.h>
 

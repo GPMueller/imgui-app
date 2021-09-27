@@ -155,7 +155,7 @@ void Application::draw_menu_bar()
 
         right_edge -= ( width + 4 * style.ItemSpacing.x );
 
-        static int N = 4;
+        constexpr int N = 4;
         for( int n = N; n > 0; n-- )
         {
             std::string label = fmt::format( "Mode {}", n );
@@ -180,9 +180,9 @@ void Application::draw_overlay()
 {
     ImGui::PushFont( font_cousine );
 
-    const float DISTANCE = 50.0f;
-    static int corner    = 0;
-    ImGuiIO & io         = ImGui::GetIO();
+    constexpr float DISTANCE = 50.0f;
+    static int corner        = 0;
+    ImGuiIO & io             = ImGui::GetIO();
     if( corner != -1 )
     {
         ImVec2 window_pos = ImVec2(
