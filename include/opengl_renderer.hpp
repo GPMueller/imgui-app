@@ -17,11 +17,11 @@ public:
 private:
     void initialize_gl();
 
-    bool gl_initialized         = false;
-    unsigned int shader_program = -1;
+    bool gl_initialized_         = false;
+    unsigned int shader_program_ = -1;
 
-    int framebuffer_w = 100;
-    int framebuffer_h = 100;
+    int framebuffer_w_ = 100;
+    int framebuffer_h_ = 100;
 };
 
 } // namespace ui

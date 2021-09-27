@@ -25,8 +25,8 @@ public:
     GLFWwindow * glfw_window_handle;
 
 private:
-    int display_w = 100;
-    int display_h = 100;
+    int display_w_ = 100;
+    int display_h_ = 100;
 };
 
 } // namespace ui

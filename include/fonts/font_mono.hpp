@@ -8,9 +8,9 @@
 namespace fonts
 {
 
-static const unsigned int monospace_compressed_size = 65326;
+inline constexpr unsigned int MONOSPACE_COMPRESSED_SIZE = 65326;
 
-static const unsigned int monospace_compressed_data[65328 / 4] = {
+inline constexpr unsigned int MONOSPACE_COMPRESSED_DATA[65328 / 4] = {
     0x0000bc57, 0x00000000, 0xc8b50100, 0x00000400, 0x00010025, 0x82100000, 0x00042e04, 0x2f534f00, 0xbe624a32,
     0x52010084, 0x28158240, 0x4d445660, 0x72a56a58, 0x080f823c, 0x0000a020, 0x6d63e005, 0x12927061, 0x01009217,
     0x00005862, 0x7663e203, 0x8a042074, 0x01009e0a, 0x2f824c68, 0x70662e3c, 0x41926d67, 0x0100fada, 0x00003c66,

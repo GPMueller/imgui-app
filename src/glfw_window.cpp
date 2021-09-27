@@ -37,11 +37,11 @@ void GlfwWindow::update()
 
 #ifdef __EMSCRIPTEN__
     // Canvas resizing does not trigger a GLFW resize callback
-    display_w = js_canvas_get_width();
-    display_h = js_canvas_get_height();
-    glfwSetWindowSize( glfw_window_handle, display_w, display_h );
+    display_w_ = js_canvas_get_width();
+    display_h_ = js_canvas_get_height();
+    glfwSetWindowSize( glfw_window_handle, display_w_, display_h_ );
 #else
-    glfwGetFramebufferSize( glfw_window_handle, &display_w, &display_h );
+    glfwGetFramebufferSize( glfw_window_handle, &display_w_, &display_h_ );
 #endif
 }
 
@@ -53,13 +53,13 @@ void GlfwWindow::resize( int width, int height )
     glfwGetWindowContentScale( glfw_window_handle, &xscale, &yscale );
 #endif
 
-    this->display_w = width * xscale;
-    this->display_h = height * yscale;
+    this->display_w_ = width * xscale;
+    this->display_h_ = height * yscale;
 }
 
 std::pair<int, int> GlfwWindow::get_size()
 {
-    return { display_w, display_h };
+    return { display_w_, display_h_ };
 }
 
 bool GlfwWindow::should_close()

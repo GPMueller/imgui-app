@@ -83,7 +83,7 @@ void gl_check_error( const std::string & prefix )
 
 void OpenglRenderer::initialize_gl()
 {
-    if( !gl_initialized )
+    if( !gl_initialized_ )
     {
         // Shader sources
         const GLchar * vertex_source = VERT_SHADER_HEADER "attribute vec4 position;                 \n"
@@ -124,18 +124,18 @@ void OpenglRenderer::initialize_gl()
         bool fragment_shader_compiled = check_shader_compilation( fragment_shader );
 
         // Link the vertex and fragment shader into a shader program
-        shader_program = glCreateProgram();
-        glAttachShader( shader_program, vertex_shader );
-        glAttachShader( shader_program, fragment_shader );
-        glLinkProgram( shader_program );
-        glUseProgram( shader_program );
-        bool shader_program_linked = check_shader_program( shader_program );
+        shader_program_ = glCreateProgram();
+        glAttachShader( shader_program_, vertex_shader );
+        glAttachShader( shader_program_, fragment_shader );
+        glLinkProgram( shader_program_ );
+        glUseProgram( shader_program_ );
+        bool shader_program_linked = check_shader_program( shader_program_ );
 
         gl_check_error( "GL init error: " );
 
-        gl_initialized = vertex_shader_compiled && fragment_shader_compiled && shader_program_linked;
+        gl_initialized_ = vertex_shader_compiled && fragment_shader_compiled && shader_program_linked;
 
-        if( !gl_initialized )
+        if( !gl_initialized_ )
             fmt::print( "Shader initialization failed!\n" );
     }
 }
@@ -150,13 +150,13 @@ void OpenglRenderer::draw()
     initialize_gl();
     gl_check_error( "--- 1 --- GL draw error: " );
 
-    glViewport( 0, 0, framebuffer_w, framebuffer_h );
+    glViewport( 0, 0, framebuffer_w_, framebuffer_h_ );
     glClearColor( background_color[0], background_color[1], background_color[2], background_color[3] );
     glClear( GL_COLOR_BUFFER_BIT );
     gl_check_error( "--- 2 --- GL draw error: " );
 
     // Specify the layout of the vertex data
-    GLint position_attribute = glGetAttribLocation( shader_program, "position" );
+    GLint position_attribute = glGetAttribLocation( shader_program_, "position" );
     gl_check_error( "--- 3 --- GL draw error: " );
 
     glEnableVertexAttribArray( position_attribute );
@@ -165,11 +165,11 @@ void OpenglRenderer::draw()
     glVertexAttribPointer( position_attribute, 2, GL_FLOAT, GL_FALSE, 0, 0 );
     gl_check_error( "--- 5 --- GL draw error: " );
 
-    glUseProgram( shader_program );
+    glUseProgram( shader_program_ );
     gl_check_error( "--- 6 --- GL draw error: " );
 
-    glUniform1f( glGetUniformLocation( shader_program, "gradient" ), gradient );
-    glUniform2f( glGetUniformLocation( shader_program, "resolution" ), framebuffer_w, framebuffer_h );
+    glUniform1f( glGetUniformLocation( shader_program_, "gradient" ), gradient );
+    glUniform2f( glGetUniformLocation( shader_program_, "resolution" ), framebuffer_w_, framebuffer_h_ );
     gl_check_error( "--- 7 --- GL draw error: " );
 
     // Draw a triangle from the 3 vertices
@@ -179,8 +179,8 @@ void OpenglRenderer::draw()
 
 void OpenglRenderer::set_framebuffer_size( int w, int h )
 {
-    this->framebuffer_h = h;
-    this->framebuffer_w = w;
+    this->framebuffer_h_ = h;
+    this->framebuffer_w_ = w;
 }
 
 } // namespace ui

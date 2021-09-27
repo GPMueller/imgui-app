@@ -8,9 +8,9 @@
 namespace fonts
 {
 
-static const unsigned int font_awesome_compressed_size = 196000;
+inline constexpr unsigned int FONT_AWESOME_COMPRESSED_SIZE = 196000;
 
-static const unsigned int font_awesome_compressed_data[196000 / 4] = {
+inline constexpr unsigned int FONT_AWESOME_COMPRESSED_DATA[196000 / 4] = {
     0x0000bc57, 0x00000000, 0x709e0400, 0x00000400, 0x00010037, 0x000f0000, 0x00030080, 0x54464670, 0x43698b4d,
     0x9e040048, 0x2b158254, 0x4544471c, 0x04f90746, 0x2e030022, 0x30280f83, 0x534f5047, 0x8f74916c, 0x34201f82,
     0x20281f82, 0x42555347, 0x68d39de2, 0x84301f82, 0xb06f0100, 0x322f534f, 0xf056a253, 0x78010000, 0x60361f82,

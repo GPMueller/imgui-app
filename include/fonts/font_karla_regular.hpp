@@ -8,9 +8,9 @@
 namespace fonts
 {
 
-static const unsigned int karla_regular_compressed_size = 12719;
+inline constexpr unsigned int KARLA_REGULAR_COMPRESSED_SIZE = 12719;
 
-static const unsigned int karla_regular_compressed_data[12720 / 4] = {
+inline constexpr unsigned int KARLA_REGULAR_COMPRESSED_DATA[12720 / 4] = {
     0x0000bc57, 0x00000000, 0xd0410000, 0x00000400, 0x00010025, 0x82110000, 0x00042604, 0x49534410, 0x820d8247,
     0xc841210c, 0x082c0782, 0x4d544646, 0xd227595e, 0x283d0000, 0x1c280f82, 0x46454447, 0xcc002800, 0x44200f82,
     0x28280f82, 0x534f5047, 0x752f8003, 0x6c2f0f82, 0x00040000, 0x42555347, 0x3bea42dc, 0x82410000, 0x5c002d0f,
